@@ -59,6 +59,7 @@ if (\$_POST['key'] !== \$storedKey) {
                 align-items: center;
                 height: 100vh;
                 margin: 0;
+                transition: background-color 0.3s, color 0.3s;
             }
             .container {
                 background-color: #444;
@@ -165,6 +166,7 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
             align-items: center;
             height: 100vh;
             margin: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
         .container {
             background-color: #444;
@@ -207,11 +209,26 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
             max-height: 100px;
             overflow-y: scroll;
         }
+
+        /* Dark Mode */
+        body.dark {
+            background-color: #121212;
+            color: #ddd;
+        }
+
+        .container.dark {
+            background-color: #333;
+        }
+
+        button.dark {
+            background-color: #0b5c0b;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Trolling Tools</h1>
+        <button id="darkModeToggle">Dark Mode</button>
         <form method="POST">
             <button name="action" value="shutdown">PC Shutdown</button>
             <label for="program">Programmname (killall):</label>
@@ -246,6 +263,32 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
             <button name="action" value="update">Update Tool</button>
         </form>
     </div>
+
+    <script>
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+        const container = document.querySelector('.container');
+
+        // Check if Dark Mode is enabled in localStorage
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark');
+            container.classList.add('dark');
+            darkModeToggle.classList.add('dark');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            container.classList.toggle('dark');
+            darkModeToggle.classList.toggle('dark');
+
+            // Save Dark Mode preference to localStorage
+            if (body.classList.contains('dark')) {
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                localStorage.removeItem('darkMode');
+            }
+        });
+    </script>
 </body>
 </html>
 EOL
