@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Sicherstellen, dass das Skript mit Root-Rechten ausgeführt wird
 if [ "$EUID" -ne 0 ]; then
     echo "Bitte führe das Skript mit Root-Rechten aus (sudo)."
     exit
@@ -8,6 +9,7 @@ fi
 INSTALL_DIR="/var/www/html/trolling"
 KEY_FILE="$INSTALL_DIR/key.txt"
 
+# Funktion für Installation
 install_trolling_tool() {
     echo "==> Installation wird gestartet..."
     read -p "Bitte setze einen sicheren Schlüssel: " key
@@ -23,6 +25,7 @@ install_trolling_tool() {
     configure_permissions
 }
 
+# Funktion für Update
 update_trolling_tool() {
     echo "==> Update wird gestartet..."
     if [ ! -f "$KEY_FILE" ]; then
@@ -35,6 +38,7 @@ update_trolling_tool() {
     echo "==> Update abgeschlossen."
 }
 
+# Funktion für das Einrichten der Webseite
 setup_website() {
     cat <<EOL > "$INSTALL_DIR/index.php"
 <?php
@@ -165,16 +169,21 @@ configure_permissions() {
     systemctl restart apache2
 }
 
-# Hauptmenü
-case "$1" in
-    install)
+# Benutzerabfrage für Auswahl
+echo "Bitte wähle eine Option:"
+echo "1. Installiere Trolling-Tool"
+echo "2. Update Trolling-Tool"
+read -p "Wähle 1 oder 2: " option
+
+case "$option" in
+    1)
         install_trolling_tool
         ;;
-    update)
+    2)
         update_trolling_tool
         ;;
     *)
-        echo "Verwendung: $0 {install|update}"
+        echo "Ungültige Auswahl. Bitte wähle 1 oder 2."
         exit 1
         ;;
 esac
