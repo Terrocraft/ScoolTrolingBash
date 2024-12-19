@@ -91,6 +91,7 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
         case 'update':
             exec('curl -s https://raw.githubusercontent.com/Terrocraft/ScoolTrolingBash/main/installer.sh -o installer.sh');
             exec('sudo bash installer.sh')
+            exec('2')
             \$response = "Update erfolgreich durchgeführt.";
             break;
 
