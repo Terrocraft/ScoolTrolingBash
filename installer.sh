@@ -6,30 +6,80 @@ if [ "$EUID" -ne 0 ]; then
     exit
 fi
 
-echo "==> Apache und PHP werden installiert..."
+echo "==> Willkommen zum Trolling Tool Installer"
+echo "Was möchtest du tun?"
+echo "1) Installieren"
+echo "2) Updaten"
+read -p "Option auswählen (1/2): " option
 
-# Updates und Installationen
-apt update
-apt install -y apache2 php libapache2-mod-php
+# Installationsverzeichnis und Key-Datei
+INSTALL_DIR="/var/www/html/trolling"
+KEY_FILE="$INSTALL_DIR/key.txt"
 
-echo "==> Apache und PHP wurden erfolgreich installiert."
+if [ "$option" -eq 1 ]; then
+    echo "==> Installation wird gestartet..."
+    
+    # Key setzen
+    read -p "Bitte setze einen sicheren Schlüssel: " key
+    mkdir -p "$INSTALL_DIR"
+    echo "$key" > "$KEY_FILE"
 
-# Trolling-Webseite einrichten
-echo "==> Trolling-Webseite wird eingerichtet..."
-mkdir -p /var/www/html/trolling
+    echo "==> Apache und PHP werden installiert..."
+    apt update
+    apt install -y apache2 php libapache2-mod-php
+
+    echo "==> Apache und PHP wurden erfolgreich installiert."
+
+elif [ "$option" -eq 2 ]; then
+    echo "==> Update wird gestartet..."
+
+    # Key überprüfen
+    if [ ! -f "$KEY_FILE" ]; then
+        echo "Fehler: Key-Datei nicht gefunden. Bitte installiere die Software neu."
+        exit 1
+    fi
+    key=$(cat "$KEY_FILE")
+    echo "Der bestehende Key lautet: $key"
+    read -p "Möchtest du den Key ändern? (y/n): " change_key
+    if [ "$change_key" = "y" ]; then
+        read -p "Bitte setze einen neuen Schlüssel: " key
+        echo "$key" > "$KEY_FILE"
+    fi
+
+else
+    echo "Ungültige Option."
+    exit 1
+fi
 
 # PHP-Datei erstellen
-cat <<EOL > /var/www/html/trolling/index.php
+echo "==> Trolling-Webseite wird eingerichtet..."
+cat <<EOL > "$INSTALL_DIR/index.php"
 <?php
-\$key = "secure_key"; // Ersetze durch einen sicheren Schlüssel
+\$keyFile = __DIR__ . '/key.txt';
+\$storedKey = trim(file_get_contents(\$keyFile));
 
-// Zugangsschutz
-if (\$_GET['key'] !== \$key) {
-    die("Unauthorized access.");
+if (\$_POST['key'] !== \$storedKey) {
+    echo <<<HTML
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Login</title>
+    </head>
+    <body style="text-align: center; font-family: Arial, sans-serif; margin-top: 50px;">
+        <h1>Bitte Schlüssel eingeben</h1>
+        <form method="POST">
+            <input type="password" name="key" placeholder="Schlüssel" required>
+            <button type="submit">Login</button>
+        </form>
+    </body>
+    </html>
+    HTML;
+    exit;
 }
 
 // Aktion verarbeiten
-if (\$_SERVER['REQUEST_METHOD'] === 'POST') {
+if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
     \$action = \$_POST['action'] ?? '';
     \$response = '';
 
@@ -41,7 +91,7 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'killall':
             \$program = escapeshellarg(\$_POST['program'] ?? '');
-            exec("killall \$program");
+            exec("sudo killall \$program");
             \$response = "Alle Instanzen von \$program wurden beendet.";
             break;
 
@@ -119,8 +169,8 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST') {
 EOL
 
 # Berechtigungen setzen
-chown -R www-data:www-data /var/www/html/trolling
-chmod -R 755 /var/www/html/trolling
+chown -R www-data:www-data "$INSTALL_DIR"
+chmod -R 755 "$INSTALL_DIR"
 
 # Sudoer-Eintrag hinzufügen
 echo "==> Konfiguration der sudo-Berechtigungen..."
@@ -130,4 +180,4 @@ echo "www-data ALL=(ALL) NOPASSWD: /sbin/shutdown, /usr/bin/killall" >> /etc/sud
 echo "==> Apache wird neu gestartet..."
 systemctl restart apache2
 
-echo "==> Setup abgeschlossen! Öffne deinen Browser und greife auf http://<SERVER-IP>/trolling/index.php?key=secure_key zu."
+echo "==> Setup abgeschlossen! Öffne deinen Browser und greife auf http://<SERVER-IP>/trolling zu."
