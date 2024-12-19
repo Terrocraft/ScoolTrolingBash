@@ -52,8 +52,8 @@ if (\$_POST['key'] !== \$storedKey) {
         <style>
             body {
                 font-family: 'Roboto', sans-serif;
-                background-color: #f4f7f6;
-                color: #333;
+                background-color: #2c2c2c;
+                color: #ddd;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -61,10 +61,10 @@ if (\$_POST['key'] !== \$storedKey) {
                 margin: 0;
             }
             .container {
-                background-color: #fff;
+                background-color: #444;
                 padding: 20px;
                 border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
                 width: 300px;
                 text-align: center;
             }
@@ -76,8 +76,10 @@ if (\$_POST['key'] !== \$storedKey) {
                 width: 100%;
                 padding: 10px;
                 margin: 10px 0;
-                border: 1px solid #ddd;
+                border: 1px solid #666;
                 border-radius: 4px;
+                background-color: #333;
+                color: #fff;
             }
             button {
                 width: 100%;
@@ -156,8 +158,8 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
+            background-color: #2c2c2c;
+            color: #ddd;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -165,10 +167,10 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
             margin: 0;
         }
         .container {
-            background-color: #fff;
+            background-color: #444;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             width: 400px;
         }
         h1 {
@@ -196,8 +198,10 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
         }
         input {
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #666;
             border-radius: 5px;
+            background-color: #333;
+            color: #fff;
         }
         .datalist {
             max-height: 100px;
