@@ -1,25 +1,15 @@
 #!/bin/bash
 
-# Sicherstellen, dass das Skript mit Root-Rechten ausgeführt wird
 if [ "$EUID" -ne 0 ]; then
     echo "Bitte führe das Skript mit Root-Rechten aus (sudo)."
     exit
 fi
 
-echo "==> Willkommen zum Trolling Tool Installer"
-echo "Was möchtest du tun?"
-echo "1) Installieren"
-echo "2) Updaten"
-read -p "Option auswählen (1/2): " option
-
-# Installationsverzeichnis und Key-Datei
 INSTALL_DIR="/var/www/html/trolling"
 KEY_FILE="$INSTALL_DIR/key.txt"
 
-if [ "$option" -eq 1 ]; then
+install_trolling_tool() {
     echo "==> Installation wird gestartet..."
-    
-    # Key setzen
     read -p "Bitte setze einen sicheren Schlüssel: " key
     mkdir -p "$INSTALL_DIR"
     echo "$key" > "$KEY_FILE"
@@ -27,33 +17,26 @@ if [ "$option" -eq 1 ]; then
     echo "==> Apache und PHP werden installiert..."
     apt update
     apt install -y apache2 php libapache2-mod-php
-
     echo "==> Apache und PHP wurden erfolgreich installiert."
 
-elif [ "$option" -eq 2 ]; then
-    echo "==> Update wird gestartet..."
+    setup_website
+    configure_permissions
+}
 
-    # Key überprüfen
+update_trolling_tool() {
+    echo "==> Update wird gestartet..."
     if [ ! -f "$KEY_FILE" ]; then
         echo "Fehler: Key-Datei nicht gefunden. Bitte installiere die Software neu."
         exit 1
     fi
-    key=$(cat "$KEY_FILE")
-    echo "Der bestehende Key lautet: $key"
-    read -p "Möchtest du den Key ändern? (y/n): " change_key
-    if [ "$change_key" = "y" ]; then
-        read -p "Bitte setze einen neuen Schlüssel: " key
-        echo "$key" > "$KEY_FILE"
-    fi
 
-else
-    echo "Ungültige Option."
-    exit 1
-fi
+    setup_website
+    configure_permissions
+    echo "==> Update abgeschlossen."
+}
 
-# PHP-Datei erstellen
-echo "==> Trolling-Webseite wird eingerichtet..."
-cat <<EOL > "$INSTALL_DIR/index.php"
+setup_website() {
+    cat <<EOL > "$INSTALL_DIR/index.php"
 <?php
 \$keyFile = __DIR__ . '/key.txt';
 \$storedKey = trim(file_get_contents(\$keyFile));
@@ -78,9 +61,8 @@ if (\$_POST['key'] !== \$storedKey) {
     exit;
 }
 
-// Aktion verarbeiten
 if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
-    \$action = \$_POST['action'] ?? '';
+    \$action = \$_POST['action'];
     \$response = '';
 
     switch (\$action) {
@@ -100,6 +82,11 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
             \$url = escapeshellarg(\$_POST['url'] ?? 'https://example.com');
             exec("export DISPLAY=\$display && firefox \$url &");
             \$response = "Firefox mit \$url auf Display \$display geöffnet.";
+            break;
+
+        case 'update':
+            exec('sudo /path/to/this/script update');
+            \$response = "Update erfolgreich durchgeführt.";
             break;
 
         default:
@@ -151,7 +138,7 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
 </head>
 <body>
     <div class="container">
-        <h1>Trolling Tools For Scool</h1>
+        <h1>Trolling Tools For School</h1>
         <form method="POST">
             <button name="action" value="shutdown">PC Shutdown</button><br>
             <label for="program">Programmname (killall):</label>
@@ -161,23 +148,33 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
             <input type="text" name="display" id="display" placeholder=":0" value=":0">
             <label for="url">URL:</label>
             <input type="text" name="url" id="url" placeholder="https://example.com">
-            <button name="action" value="open_firefox">Open Firefox</button>
+            <button name="action" value="open_firefox">Open Firefox</button><br>
+            <button name="action" value="update">Update Tool</button>
         </form>
     </div>
 </body>
 </html>
 EOL
+}
 
-# Berechtigungen setzen
-chown -R www-data:www-data "$INSTALL_DIR"
-chmod -R 755 "$INSTALL_DIR"
+# Funktion für Berechtigungen
+configure_permissions() {
+    chown -R www-data:www-data "$INSTALL_DIR"
+    chmod -R 755 "$INSTALL_DIR"
+    echo "www-data ALL=(ALL) NOPASSWD: /sbin/shutdown, /usr/bin/killall, /path/to/this/script" >> /etc/sudoers
+    systemctl restart apache2
+}
 
-# Sudoer-Eintrag hinzufügen
-echo "==> Konfiguration der sudo-Berechtigungen..."
-echo "www-data ALL=(ALL) NOPASSWD: /sbin/shutdown, /usr/bin/killall" >> /etc/sudoers
-
-# Apache neustarten
-echo "==> Apache wird neu gestartet..."
-systemctl restart apache2
-
-echo "==> Setup abgeschlossen! Öffne deinen Browser und greife auf http://<SERVER-IP>/trolling zu."
+# Hauptmenü
+case "$1" in
+    install)
+        install_trolling_tool
+        ;;
+    update)
+        update_trolling_tool
+        ;;
+    *)
+        echo "Verwendung: $0 {install|update}"
+        exit 1
+        ;;
+esac
