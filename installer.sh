@@ -144,7 +144,7 @@ if (\$_SERVER['REQUEST_METHOD'] === 'POST' && isset(\$_POST['action'])) {
 </head>
 <body>
     <div class="container">
-        <h1>Trolling Tools For School</h1>
+        <h1>Trolling Tools</h1>
         <form method="POST">
             <button name="action" value="shutdown">PC Shutdown</button><br>
             <label for="program">Programmname (killall):</label>
